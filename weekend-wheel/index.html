@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Weekend Wheel</title>
+<title>Sisters Adventure Wheel</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Nunito:ital,wght@0,500;0,700;0,800;1,500&display=swap">
 <style>
@@ -86,7 +86,7 @@
   @media (max-width: 760px) { .stage { grid-template-columns: minmax(0, 1fr); } }
 
   .wheel-area { display: flex; flex-direction: column; align-items: center; gap: 18px; min-width: 0; }
-  .wheel-box { position: relative; width: min(100%, 520px); aspect-ratio: 1; max-width: 100%; }
+  .wheel-box { position: relative; width: min(100%, 560px); aspect-ratio: 1; max-width: 100%; }
   canvas { width: 100%; height: 100%; display: block; border-radius: 50%; box-shadow: var(--shadow); }
   .pointer {
     position: absolute;
@@ -126,7 +126,7 @@
   .spin-btn:focus-visible, button:focus-visible, textarea:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
 
   .result {
-    width: min(100%, 520px);
+    width: min(100%, 560px);
     background: var(--panel);
     border: 2px dashed var(--line);
     border-radius: 14px;
@@ -136,6 +136,7 @@
   .result .eyebrow { font-size: .74rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 800; margin: 0 0 4px; }
   .result .pick { font-family: var(--font-display); font-size: clamp(1.4rem, 4.5vw, 2rem); margin: 0; line-height: 1.15; overflow-wrap: anywhere; }
   .result .pick.placeholder { color: var(--muted); font-family: var(--font-body); font-weight: 700; font-size: 1rem; }
+  .result .detail { margin: 6px 0 0; color: var(--muted); font-weight: 600; font-size: .95rem; overflow-wrap: anywhere; }
   .result .actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
 
   .panel {
@@ -191,8 +192,8 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Weekend Wheel</h1>
-    <p>Step right up. Spin to decide.</p>
+    <h1>Sisters Adventure Wheel</h1>
+    <p>Tampa Bay · within an hour · check Groupon first</p>
   </header>
 
   <div class="stage">
@@ -205,6 +206,7 @@
       <div class="result" aria-live="polite">
         <p class="eyebrow">This weekend you're doing</p>
         <p class="pick placeholder" id="pick">Hit Spin and let the wheel decide.</p>
+        <p class="detail" id="detail" hidden></p>
         <div class="actions" id="resultActions" hidden>
           <button class="btn" id="removeWinner" type="button">Remove it from the wheel</button>
           <button class="btn" id="spinAgain" type="button">Spin again</button>
@@ -214,11 +216,11 @@
 
     <aside class="panel" aria-label="Activity list">
       <h2>Your options</h2>
-      <p class="hint">One activity per line. The wheel redraws as you type, and your list stays in this browser.</p>
+      <p class="hint">One adventure per line. Add a <strong>|</strong> after the name for details (where, price, phone) and they show when it lands. The wheel redraws as you type, and your list stays in this browser.</p>
       <textarea id="options" spellcheck="false" aria-label="Activities, one per line"></textarea>
       <div class="toolbar">
         <button class="btn" id="shuffle" type="button">Shuffle order</button>
-        <button class="btn" id="reset" type="button">Restore examples</button>
+        <button class="btn" id="reset" type="button">Restore full list</button>
         <span class="count" id="count"></span>
       </div>
       <label class="toggle"><input type="checkbox" id="sound" checked> Clicker sound</label>
@@ -234,18 +236,46 @@
 <script>
 (function () {
   var EXAMPLES = [
-    "Morning hike", "Farmers market run", "Try a new brunch spot", "Bike ride by the water",
-    "Movie marathon at home", "Day trip somewhere new", "Cook a big meal", "Board game night",
-    "Museum or gallery", "Do absolutely nothing"
+    "Fly a plane yourself | KC Aero Academy, Tampa North Airport, Lutz. Discovery flight from $100, about 40 min in the air, you take the controls. (656) 223-2370",
+    "Doors-off helicopter | flyVENTURE, Peter O. Knight Airport, Davis Islands. About $119-129/person, fits 1-3, free doors-off upgrade. (844) 359-4354",
+    "Tandem hang gliding | Wallaby Ranch, Davenport (~1 hr). About $195, open 7:30 a.m.-7 p.m., mornings are calmer",
+    "Supercar driving | The Motor Enclave (~15 min east of Tampa); exotic autocross at T4 KartPlex, Palmetto (21+, license required)",
+    "Ziplines | Empower Adventures, Oldsmar (~$94, 2 hrs); TreeHoppers, Dade City (10 courses, 3-hr climb, 813-381-5400); TreeUmph, Bradenton",
+    "iFly indoor skydiving | iFly Tampa",
+    "Cable wakeboarding | The Cove Tampa, Seffner. Cable wake plus Ninja Warrior inflatable park, gear included. Fill out the waiver online first",
+    "SunWest Park | Hudson. Cable wake park plus aqua park",
+    "Flyboarding | Flyboard Tampa, Tarpon Springs",
+    "Parasailing | Anna Maria / Bradenton Beach (tandem or triple flights, 8-10 min in the air); also Clearwater",
+    "Jet skis | Clearwater or Tierra Verde",
+    "Airboat ride | Tom & Jerry's, Bushnell (~1 hr). You can hold a live gator",
+    "Deep sea fishing (Two Georges) | Dolphin Deep Sea Fishing, 80-ft boat, 8-hour Gulf trip. 610 Dodecanese Blvd, Tarpon Springs. (727) 934-5222. Check current price and the new parking location",
+    "Gulfstar fishing trip | Tarpon Springs. Half-day, 12-hour, and 2-day trips. 727-938-5300",
+    "Miss Virginia grouper trip | Tarpon Springs. 58-ft boat, 12-hour grouper trips, ~$200",
+    "Sponge diving boat | St. Nicholas Boat Line, Tarpon Springs. Historic boat with live diver demo, ~1 hr, walk-up. 727-942-6425",
+    "Private tiki boat | Tiki Tavern Nautica (Captain Sean), Tarpon Springs. BYOB tiki boat for up to 6: sunset, dolphin, sandbar, or pub crawl trips",
+    "Hot air balloon | Big Red Balloon, Tampa. Sunrise only, includes champagne and breakfast",
+    "Ride and swim with horses | In The Breeze Ranch (check Groupon)",
+    "ATVs | Croom ATV Park, Brooksville",
+    "Swim with sharks | Florida Aquarium, Tampa",
+    "Indoor go-karts | Tampa Bay Grand Prix; Elev8 Fun (go-karts plus axe throwing)",
+    "Busch Gardens | Tampa",
+    "Escape room | Pick one in Tampa",
+    "Rock climbing gym | Pick one in Tampa",
+    "Scuba intro dive | Scuba certification or a discover-scuba dive",
+    "Snorkel Anclote Key | Snorkel trip to Anclote Key",
+    "Shark fishing charter | Shark fishing charter",
+    "Kayak with manatees | Best in winter",
+    "Clear kayak tour | Clear kayak tours at the Sponge Docks, Tarpon Springs"
   ];
   var SEG_VARS = ["--seg-1","--seg-2","--seg-3","--seg-4","--seg-5","--seg-6","--seg-7","--seg-8"];
-  var STORAGE_KEY = "weekend-wheel-options";
+  var STORAGE_KEY = "sisters-adventure-wheel-v1";
 
   var canvas = document.getElementById("wheel");
   var ctx = canvas.getContext("2d");
   var textarea = document.getElementById("options");
   var spinBtn = document.getElementById("spin");
   var pick = document.getElementById("pick");
+  var detailEl = document.getElementById("detail");
   var actions = document.getElementById("resultActions");
   var removeBtn = document.getElementById("removeWinner");
   var againBtn = document.getElementById("spinAgain");
@@ -274,7 +304,10 @@
     try { localStorage.setItem(STORAGE_KEY, textarea.value); } catch (e) {}
   }
   function parse() {
-    options = textarea.value.split("\n").map(function (s) { return s.trim(); }).filter(Boolean);
+    options = textarea.value.split("\n").map(function (s) { return s.trim(); }).filter(Boolean).map(function (line) {
+      var i = line.indexOf("|");
+      return { line: line, name: (i >= 0 ? line.slice(0, i) : line).trim(), detail: i >= 0 ? line.slice(i + 1).trim() : "" };
+    });
     countEl.textContent = options.length + (options.length === 1 ? " option" : " options");
     spinBtn.disabled = options.length < 2 || spinning;
     draw();
@@ -329,10 +362,10 @@
       ctx.rotate(flip ? mid + Math.PI : mid);
       ctx.textAlign = flip ? "left" : "right";
       ctx.textBaseline = "middle";
-      var maxW = r * 0.62;
+      var maxW = r * 0.68;
       var fontSize = Math.max(11, Math.min(size / 20, (seg * r) * 0.5));
       ctx.font = "800 " + fontSize + "px " + cssVar("--font-body");
-      var label = options[i];
+      var label = options[i].name;
       while (ctx.measureText(label).width > maxW && fontSize > 10) {
         fontSize -= 1;
         ctx.font = "800 " + fontSize + "px " + cssVar("--font-body");
@@ -343,7 +376,7 @@
       }
       ctx.fillStyle = segText;
       ctx.shadowColor = "rgba(0,0,0,.35)"; ctx.shadowBlur = 3; ctx.shadowOffsetY = 1;
-      ctx.fillText(label, flip ? -(r - 18) : r - 18, 0);
+      ctx.fillText(label, flip ? -(r - 14) : r - 14, 0);
       ctx.restore();
     }
 
@@ -409,6 +442,7 @@
     actions.hidden = true;
     pick.classList.add("placeholder");
     pick.textContent = "Round and round it goes…";
+    detailEl.hidden = true;
 
     var n = options.length, seg = (Math.PI * 2) / n;
     var turns = reduceMotion ? 2 : 6 + Math.random() * 3;
@@ -447,10 +481,12 @@
     var idx = winnerIndex(rotation);
     lastWinner = options[idx];
     pick.classList.remove("placeholder");
-    pick.textContent = lastWinner;
+    pick.textContent = lastWinner.name;
+    detailEl.textContent = lastWinner.detail;
+    detailEl.hidden = !lastWinner.detail;
     actions.hidden = false;
     fanfare();
-    history.unshift(lastWinner);
+    history.unshift(lastWinner.name);
     renderHistory();
     if (autoRemove.checked) removeWinner();
     spinBtn.disabled = options.length < 2;
@@ -472,7 +508,7 @@
     var lines = textarea.value.split("\n");
     var removed = false;
     textarea.value = lines.filter(function (l) {
-      if (!removed && l.trim() === lastWinner) { removed = true; return false; }
+      if (!removed && l.trim() === lastWinner.line) { removed = true; return false; }
       return true;
     }).join("\n");
     save(); parse();
